@@ -367,9 +367,10 @@ class AclShell extends Shell
      */
     public function initdb()
     {
-        $_SERVER['argv'][1]='migrations';
-        $_SERVER['argv'][2]='migrate';
-        $_SERVER['argv'][3]='--plugin=acl';
+        // $_SERVER['argv'][1]='migrations';
+        // $_SERVER['argv'][2]='migrate';
+        // $_SERVER['argv'][3]='--plugin=acl';
+        // print_r($_SERVER);
         return $this->dispatchShell('migrations migrate --plugin=acl');
     }
 
