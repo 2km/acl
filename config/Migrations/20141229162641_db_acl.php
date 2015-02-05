@@ -4,6 +4,7 @@ use Phinx\Migration\AbstractMigration;
 
 class DbAcl extends AbstractMigration
 {
+
     /**
      * Change Method.
      *
@@ -47,13 +48,11 @@ class DbAcl extends AbstractMigration
             ->create();
     }
 
-
     /**
      * Migrate Up.
      */
     public function up()
     {
-
     }
 
     /**
@@ -61,6 +60,6 @@ class DbAcl extends AbstractMigration
      */
     public function down()
     {
-
     }
+
 }

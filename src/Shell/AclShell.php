@@ -55,7 +55,7 @@ class AclShell extends Shell
      *
      * @var array
      */
-    public $tasks = ['DbConfig','Acl.AcoSync'];
+    public $tasks = ['DbConfig'];
 
     /**
      * Override startup of the Shell
@@ -92,11 +92,19 @@ class AclShell extends Shell
                 return $this->DbConfig->execute();
             }
 
-            if (!in_array($this->command, ['initdb'])) {
-                $registry = new ComponentRegistry();
-                $this->Acl = new AclComponent($registry);
-                $controller = new Controller();
+            try {
+                \Cake\ORM\TableRegistry::get('Aros')->schema();
+            } catch (\Cake\Database\Exception $e) {
+                $this->out(__d('cake_acl', 'Acl database tables not found. To create them, run:'));
+                $this->out();
+                $this->out('  bin/cake Migrations.migrations migrate -p Acl');
+                $this->out();
+                return $this->_stop();
             }
+
+            $registry = new ComponentRegistry();
+            $this->Acl = new AclComponent($registry);
+            $controller = new Controller();
         }
     }
 
@@ -180,8 +188,8 @@ class AclShell extends Shell
                 'parent_id' => $this->_getNodeId($class, $parent)
             ]
         ];
-        $this->Acl->{$class}->create();
-        if (!$this->Acl->{$class}->save($data)) {
+        $entity = $this->Acl->{$class}->newEntity($data);
+        if (!$this->Acl->{$class}->save($entity)) {
             $this->out(__d('cake_acl', 'Error in setting new parent. Please make sure the parent node exists, and is not a descendant of the node specified.'));
         } else {
             $this->out(__d('cake_acl', 'Node parent set to {0}', [$this->args[2]]) . "\n");
@@ -367,20 +375,7 @@ class AclShell extends Shell
      */
     public function initdb()
     {
-        // $_SERVER['argv'][1]='migrations';
-        // $_SERVER['argv'][2]='migrate';
-        // $_SERVER['argv'][3]='--plugin=acl';
-        // print_r($_SERVER);
-        return $this->dispatchShell('migrations migrate --plugin=acl');
-    }
-
-    /**
-     * Syncronize ACOs
-     *
-     * @return mixed
-     */
-    public function acosync(){
-        return $this->AcoSync->main();
+        return $this->dispatchShell('schema create DbAcl');
     }
 
     /**
@@ -523,9 +518,6 @@ class AclShell extends Shell
             ]
         ])->addSubcommand('initdb', [
             'help' => __d('cake_acl', 'Initialize the DbAcl tables. Uses this command : cake schema create DbAcl')
-        ])->addSubcommand('acosync', [
-            'help' => __d('cake_acl', 'Syncronize acos')
-
         ])->epilog(
             [
                 'Node and parent arguments can be in one of the following formats:',
